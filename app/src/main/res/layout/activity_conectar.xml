@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.sergi.conexioncamara.Conectar">
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="14dp"
+        android:layout_marginEnd="124dp"
+        android:layout_marginStart="125dp"
+        android:layout_marginTop="65dp"
+        android:onClick="iniciar"
+        android:text="Iniciar cámara"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/radioGroup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="199dp"
+        android:layout_height="159dp"
+        android:layout_marginBottom="72dp"
+        android:layout_marginEnd="81dp"
+        android:layout_marginStart="81dp"
+        android:layout_marginTop="23dp"
+        app:layout_constraintBottom_toTopOf="@+id/button2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.521"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button">
+
+        <RadioButton
+            android:id="@+id/radButtonIm"
+            android:layout_width="92dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Imagen"
+            tools:layout_editor_absoluteX="168dp"
+            tools:layout_editor_absoluteY="140dp" />
+
+        <RadioButton
+            android:id="@+id/radButtonV"
+            android:layout_width="82dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="Video"
+            tools:layout_editor_absoluteX="168dp"
+            tools:layout_editor_absoluteY="208dp" />
+
+        <RadioButton
+            android:id="@+id/radButtonLive"
+            android:layout_width="92dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Live"
+            tools:layout_editor_absoluteX="168dp"
+            tools:layout_editor_absoluteY="140dp" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="181dp"
+        android:layout_marginEnd="122dp"
+        android:layout_marginStart="131dp"
+        android:layout_marginTop="91dp"
+        android:onClick="detener"
+        android:text="Parar Camara"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+
+</android.support.constraint.ConstraintLayout>
