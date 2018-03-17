@@ -1,18 +1,21 @@
 package com.example.sergi.conexioncamara;
 
+
 import android.os.AsyncTask;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.sergi.conexioncamara.Messages.IncomingCameraMessage;
-import com.example.sergi.conexioncamara.Messages.IncomingCameraMessageReply;
-import com.example.sergi.conexioncamara.Messages.OutcomingCameraMessage;
+import com.example.sergi.conexioncamara.Messages.OutcomingCameraMessagePhoto;
+import com.example.sergi.conexioncamara.Messages.OutcomingCameraMessageRequest;
 import com.example.sergi.conexioncamara.Utils.Constants;
 import com.example.sergi.conexioncamara.Utils.Parser;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,25 +26,26 @@ import java.net.SocketAddress;
 public class FotoActivity extends AppCompatActivity{
     NetworkTask networktask;
     TextView textStatus;
+    ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_foto);
         textStatus = (TextView)findViewById(R.id.textStatus);
+        imageView = (ImageView) findViewById(R.id.imageView);
 
     }
 
     public void hacerFoto(View view) throws IOException {
-        Boolean resultado;
-        OutcomingCameraMessage msg = new OutcomingCameraMessage(Constants.MSG_ID_TAKE_PHOTO); //Constructor del mensaje
+        OutcomingCameraMessagePhoto msg = new OutcomingCameraMessagePhoto(Constants.MSG_ID_TAKE_PHOTO); //Constructor del mensaje
         networktask = new NetworkTask();
         networktask.execute(msg);
 
 
     }
 
-    public class NetworkTask extends AsyncTask<OutcomingCameraMessage, byte[], Boolean> {
+    public class NetworkTask extends AsyncTask<OutcomingCameraMessagePhoto, byte[], String> {
 
         Socket nsocket; //Network Socket
         InputStream nis; //Network Input Stream
@@ -53,14 +57,16 @@ public class FotoActivity extends AppCompatActivity{
         }
 
         @Override
-        protected Boolean doInBackground(OutcomingCameraMessage... params) { //This runs on a different thread
-            boolean result = false;
-            String ruta;
+        protected String doInBackground(OutcomingCameraMessagePhoto... params) { //This runs on a different thread
+            String result;
+            String ruta = null;
+            String fileName = null;
+            String url = null;
             Parser p = new Parser();
             try {
 
-                OutcomingCameraMessage msgPhoto = params[0];
-                OutcomingCameraMessage msg = new OutcomingCameraMessage(Constants.MSG_ID_REQUEST, 0);
+                OutcomingCameraMessagePhoto msgPhoto = params[0];
+                OutcomingCameraMessageRequest msg = new OutcomingCameraMessageRequest(Constants.MSG_ID_REQUEST);
 
                 //TODO INICIAR LA CONEXIÓN
                 Log.i("AsyncTask", "doInBackground: Creating socket");
@@ -81,20 +87,19 @@ public class FotoActivity extends AppCompatActivity{
                     int read = nis.read(buffer, 0, Constants.TAMANO_BUFFER); //This is blocking
                     byte[] tempdata = new byte[read];
                     System.arraycopy(buffer, 0, tempdata, 0, read);
-                    //IncomingCameraMessage inMsgReply = new IncomingCameraMessage(tempdata);
                     publishProgress(tempdata);
                     //Parsear la cadena recibida
-                    //inMsgReply.parserInputMessage();
                     IncomingCameraMessage inMsgReply = p.parsearMensaje(tempdata);
                     if(inMsgReply.rval < 0) {
                         //La acción de tomar foto ha fallado
+                        result = null;
                         return result;
                     }
 
                     //TODO SETEAR EL TOKEN EN EL MSG
                     //OutcomingCameraMessage msgPhoto = new OutcomingCameraMessage(769, inMsgReply.paramToken);
                     msgPhoto.setToken(inMsgReply.paramToken); //Modificamos el token del mensaje
-                    String cmdPhoto = msgPhoto.componerMensajeRequest();
+                    String cmdPhoto = msgPhoto.componerMensajePhoto();
 
                     //TODO ENVIAR MSG
                     nos.write(cmdPhoto.getBytes());
@@ -124,14 +129,17 @@ public class FotoActivity extends AppCompatActivity{
                         //msgsRespond[i].parserRespondMessage();
                         if(msgsRespond[i].type != null) {
                             if (msgsRespond[i].type.contains("photo_taken")) {
-                                result = true;
                                 if (msgsRespond[i].param != null){
                                     ruta = msgsRespond[i].param;
-                                    publishProgress(ruta.getBytes());
+                                    fileName = p.extractFileName(ruta);
+                                    url = p.generateFileURL(fileName);
                                 }
                             }
                         }
                     }
+
+
+                    //TODO save image into Internal Storage
 
 
                     //TODO CERRAR SOCKETS Y STREAMS
@@ -147,7 +155,7 @@ public class FotoActivity extends AppCompatActivity{
                 e.printStackTrace();
             } 
 
-            return result;
+            return url;  //Devolvemos la url al método PostExecute
         }
 
         public int readInputStreamWithTimeout(InputStream is, byte[] b, int timeoutMillis)
@@ -177,12 +185,18 @@ public class FotoActivity extends AppCompatActivity{
         }
 
         @Override
-        protected void onPostExecute(Boolean result) {
+        protected void onPostExecute(String result) {
             System.out.println("RESULTADO: " +result);
-            if (result) {
+            if (result != null) {
                 Log.i("AsyncTask", "onPostExecute: Completed.");
                 //Hacer aquí un Toast de que algo ha fallado
                 textStatus.setText("Foto hecha");
+                //Mostrar la imagen de la foto realizada
+                textStatus.setText(result);
+                Glide.with(imageView.getContext())
+                        .load(result)
+                        .into(imageView);
+
             } else {
                 Log.i("AsyncTask", "onPostExecute: Something ocurred.");
                 textStatus.setText("No se ha podido realizar la foto");

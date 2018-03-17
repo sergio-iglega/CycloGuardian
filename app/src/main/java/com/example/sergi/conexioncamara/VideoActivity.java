@@ -16,6 +16,8 @@ import android.os.AsyncTask;
 
 import com.example.sergi.conexioncamara.Messages.IncomingCameraMessage;
 import com.example.sergi.conexioncamara.Messages.OutcomingCameraMessage;
+import com.example.sergi.conexioncamara.Messages.OutcomingCameraMessageRequest;
+import com.example.sergi.conexioncamara.Messages.OutcomingCameraMessageVideo;
 import com.example.sergi.conexioncamara.Utils.Constants;
 import com.example.sergi.conexioncamara.Utils.Parser;
 
@@ -32,7 +34,7 @@ public class VideoActivity extends AppCompatActivity {
     }
 
     public void iniciarVideo(View view) throws IOException {
-        OutcomingCameraMessage msg = new OutcomingCameraMessage(Constants.MSG_ID_START_VIDEO); //Constructor del mensaje
+        OutcomingCameraMessageVideo msg = new OutcomingCameraMessageVideo(Constants.MSG_ID_START_VIDEO); //Constructor del mensaje
         networktask = new NetworkTask();
         networktask.execute(msg);
 
@@ -41,12 +43,12 @@ public class VideoActivity extends AppCompatActivity {
 
 
     public void detenerVideo(View view) throws IOException {
-        OutcomingCameraMessage msg = new OutcomingCameraMessage(Constants.MSG_ID_STOP_VIDEO); //Constructor del mensaje
+        OutcomingCameraMessageVideo msg = new OutcomingCameraMessageVideo(Constants.MSG_ID_STOP_VIDEO); //Constructor del mensaje
         networktask = new NetworkTask();
         networktask.execute(msg);
     }
 
-    public class NetworkTask extends AsyncTask<OutcomingCameraMessage, byte[], Boolean> {
+    public class NetworkTask extends AsyncTask<OutcomingCameraMessageVideo, byte[], Boolean> {
 
         Socket nsocket; //Network Socket
         InputStream nis; //Network Input Stream
@@ -58,15 +60,15 @@ public class VideoActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Boolean doInBackground(OutcomingCameraMessage... params) { //This runs on a different thread
+        protected Boolean doInBackground(OutcomingCameraMessageVideo... params) { //This runs on a different thread
             boolean result = false;
             String ruta;
             Parser p = new Parser();
 
             try {
 
-                OutcomingCameraMessage msgVideo = params[0];
-                OutcomingCameraMessage msg = new OutcomingCameraMessage(Constants.MSG_ID_REQUEST, 0);
+                OutcomingCameraMessageVideo msgVideo = params[0];
+                OutcomingCameraMessageRequest msg = new OutcomingCameraMessageRequest(Constants.MSG_ID_REQUEST);
 
                 //TODO INICIAR LA CONEXIÓN
                 Log.i("AsyncTask", "doInBackground: Creating socket");
@@ -99,7 +101,7 @@ public class VideoActivity extends AppCompatActivity {
                     //TODO SETEAR EL TOKEN EN EL MSG
                     //OutcomingCameraMessage msgPhoto = new OutcomingCameraMessage(769, inMsgReply.paramToken);
                     msgVideo.setToken(inMsgReply.paramToken); //Modificamos el token del mensaje
-                    String cmdVideo = msgVideo.componerMensajeRequest();
+                    String cmdVideo = msgVideo.componerMensajeVideo();
 
                     //TODO ENVIAR MSG
                     nos.write(cmdVideo.getBytes());

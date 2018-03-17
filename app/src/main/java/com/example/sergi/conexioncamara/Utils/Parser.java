@@ -160,4 +160,22 @@ public class Parser {
         return msgFallo;
 
     }
+
+    public String extractFileName(String ruta) {
+        String fileName = null;
+        String rutaSin = ruta.replace(" ", "");  //Quitamos los espacios existentes en la cadena
+        String delims = "[/]";
+        String[] tokens = rutaSin.split(delims);
+
+        for (int i = 0; i < tokens.length; i++) {
+            if(tokens[i].contains("100MEDIA")) {
+                fileName = tokens[i+1].substring(0,tokens[i+1].length()-1);
+            }
+        }
+        return fileName;
+    }
+
+    public String generateFileURL(String nameFile) {
+        return Constants.DIRECCION_FILE + nameFile;
+    }
 }
